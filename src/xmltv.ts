@@ -31,7 +31,9 @@ export function buildChannelsXml(data: GridApiResponse): string {
     // 1. Clean call sign (strips leading "2.1 " and trailing "DT", "DT2", etc.)
     // e.g. "2.1 WJBKDT" or "WJBKDT" becomes "WJBK"
     const cleanCallSign = channel.callSign
-      ? channel.callSign.replace(/^[0-9.]+\s*/, "").replace(/DT\d*\$/i, "")
+      ? channel.callSign
+          .replace(/^[0-9.]+\s*/, "")                       // Strip leading channel numbers (e.g. "2.1 ")
+          .replace(/(DT|D|HD|CD|LD|CA|LP)[0-9]*$/i, "")      // Strip trailing suffixes & repeater numbers
       : "";
 
     // FIRST DISPLAY NAME: Clean call sign for NextPVR Auto Map (e.g., "WJBK")
