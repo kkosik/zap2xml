@@ -25,39 +25,22 @@ export function formatDate(dateStr: string): string {
 
 export function buildChannelsXml(data: GridApiResponse): string {
   let xml = "";
+
   for (const channel of data.channels) {
     xml += `  <channel id="${escapeXml(channel.channelId)}">\n`;
-
-    // 1. Clean call sign (strips leading "2.1 " and trailing "DT", "DT2", etc.)
-    // e.g. "2.1 WJBKDT" or "WJBKDT" becomes "WJBK"
-    const cleanCallSign = channel.callSign
-      ? channel.callSign
-          .replace(/^[0-9.]+\s*/, "")                       // Strip leading channel numbers (e.g. "2.1 ")
-          .replace(/(DT|D|HD|CD|LD|CA|LP)[0-9]*$/i, "")      // Strip trailing suffixes & repeater numbers
-      : "";
-
-    // FIRST DISPLAY NAME: Clean call sign for NextPVR Auto Map (e.g., "WJBK")
-    if (cleanCallSign) {
-      xml += `    <display-name>${escapeXml(cleanCallSign)}</display-name>\n`;
-    }
-
-    // SECOND: Original raw call sign (e.g. "WJBKDT")
-    if (channel.callSign && channel.callSign !== cleanCallSign) {
-      xml += `    <display-name>${escapeXml(channel.callSign)}</display-name>\n`;
-    }
-
-    // THIRD: Channel number + clean call sign (e.g. "2.1 WJBK")
-    if (channel.channelNo && cleanCallSign) {
-      xml += `    <display-name>${escapeXml(channel.channelNo)} ${escapeXml(cleanCallSign)}</display-name>\n`;
-    }
-
-    // FOURTH: Channel number alone (e.g. "2.1")
+    
     if (channel.channelNo) {
-      xml += `    <display-name>${escapeXml(channel.channelNo)}</display-name>\n`;
+      xml += `    <display-name>${escapeXml(
+        channel.channelNo,
+      )}</display-name>\n`;
     }
+    
+    xml += `    <display-name>${escapeXml(channel.callSign)}</display-name>\n`;
 
     if (channel.affiliateName) {
-      xml += `    <display-name>${escapeXml(channel.affiliateName)}</display-name>\n`;
+      xml += `    <display-name>${escapeXml(
+        channel.affiliateName,
+      )}</display-name>\n`;
     }
 
     if (channel.thumbnail) {
@@ -67,6 +50,7 @@ export function buildChannelsXml(data: GridApiResponse): string {
           : "https:" + channel.thumbnail,
       )}" />\n`;
     }
+
     xml += "  </channel>\n";
   }
   return xml;
