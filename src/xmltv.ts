@@ -28,17 +28,28 @@ export function buildChannelsXml(data: GridApiResponse): string {
   for (const channel of data.channels) {
     xml += `  <channel id="${escapeXml(channel.channelId)}">\n`;
 
-    // 1. Clean call sign (e.g. "WJBK") for NextPVR Auto Map to match tuner names
-    if (channel.callSign) {
+    // 1. Clean call sign (strips leading "2.1 " and trailing "DT", "DT2", etc.)
+    // e.g. "2.1 WJBKDT" or "WJBKDT" becomes "WJBK"
+    const cleanCallSign = channel.callSign
+      ? channel.callSign.replace(/^[0-9.]+\s*/, "").replace(/DT\d*\$/i, "")
+      : "";
+
+    // FIRST DISPLAY NAME: Clean call sign for NextPVR Auto Map (e.g., "WJBK")
+    if (cleanCallSign) {
+      xml += `    <display-name>${escapeXml(cleanCallSign)}</display-name>\n`;
+    }
+
+    // SECOND: Original raw call sign (e.g. "WJBKDT")
+    if (channel.callSign && channel.callSign !== cleanCallSign) {
       xml += `    <display-name>${escapeXml(channel.callSign)}</display-name>\n`;
     }
 
-    // 2. Combined channel number + call sign (e.g. "2.1 WJBK")
-    if (channel.channelNo && channel.callSign) {
-      xml += `    <display-name>${escapeXml(channel.channelNo)} ${escapeXml(channel.callSign)}</display-name>\n`;
+    // THIRD: Channel number + clean call sign (e.g. "2.1 WJBK")
+    if (channel.channelNo && cleanCallSign) {
+      xml += `    <display-name>${escapeXml(channel.channelNo)} ${escapeXml(cleanCallSign)}</display-name>\n`;
     }
 
-    // 3. Channel number alone (e.g. "2.1")
+    // FOURTH: Channel number alone (e.g. "2.1")
     if (channel.channelNo) {
       xml += `    <display-name>${escapeXml(channel.channelNo)}</display-name>\n`;
     }
