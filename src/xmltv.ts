@@ -28,6 +28,13 @@ export function buildChannelsXml(data: GridApiResponse): string {
 
   for (const channel of data.channels) {
     xml += `  <channel id="${escapeXml(channel.channelId)}">\n`;
+
+    // Combined number + name for NextPVR mapping
+    const primaryName = [channel.channelNo, channel.callSign].filter(Boolean).join(" ");
+    if (primaryName) {
+      xml += `    <display-name>${escapeXml(primaryName)}</display-name>\n`;
+    }
+    
     xml += `    <display-name>${escapeXml(channel.callSign)}</display-name>\n`;
 
     if (channel.affiliateName) {
