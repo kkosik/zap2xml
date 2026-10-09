@@ -25,28 +25,27 @@ export function formatDate(dateStr: string): string {
 
 export function buildChannelsXml(data: GridApiResponse): string {
   let xml = "";
-
+  
   for (const channel of data.channels) {
     xml += `  <channel id="${escapeXml(channel.channelId)}">\n`;
 
-    // Combined number + name for NextPVR mapping
-    const primaryName = [channel.channelNo, channel.callSign].filter(Boolean).join(" ");
-    if (primaryName) {
-      xml += `    <display-name>${escapeXml(primaryName)}</display-name>\n`;
+    // 1. Clean call sign (e.g., "WJBK" or "WDIV-HD") for NextPVR Auto Map matching
+    if (channel.callSign) {
+      xml += `    <display-name>${escapeXml(channel.callSign)}</display-name>\n`;
     }
-    
-    xml += `    <display-name>${escapeXml(channel.callSign)}</display-name>\n`;
+
+    // 2. Combined channel number + call sign (e.g., "2.1 WJBK")
+    if (channel.channelNo && channel.callSign) {
+      xml += `    <display-name>${escapeXml(channel.channelNo)} ${escapeXml(channel.callSign)}</display-name>\n`;
+    }
+
+    // 3. Channel number alone (e.g., "2.1")
+    if (channel.channelNo) {
+      xml += `    <display-name>${escapeXml(channel.channelNo)}</display-name>\n`;
+    }
 
     if (channel.affiliateName) {
-      xml += `    <display-name>${escapeXml(
-        channel.affiliateName,
-      )}</display-name>\n`;
-    }
-
-    if (channel.channelNo) {
-      xml += `    <display-name>${escapeXml(
-        channel.channelNo,
-      )}</display-name>\n`;
+      xml += `    <display-name>${escapeXml(channel.affiliateName)}</display-name>\n`;
     }
 
     if (channel.thumbnail) {
@@ -56,6 +55,10 @@ export function buildChannelsXml(data: GridApiResponse): string {
           : "https:" + channel.thumbnail,
       )}" />\n`;
     }
+    xml += "  </channel>\n";
+  }
+  return xml;
+}
 
     xml += "  </channel>\n";
   }
